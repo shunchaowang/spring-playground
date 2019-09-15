@@ -26,6 +26,7 @@ public class ConcurrentController {
             e.printStackTrace();
         }
         logger.info("Completed processing request");
+
         return "Hello World!";
     }
 }
