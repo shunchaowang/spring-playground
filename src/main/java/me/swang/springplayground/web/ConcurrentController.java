@@ -5,48 +5,72 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.async.DeferredResult;
 
 import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ForkJoinPool;
 
 @RestController
 @RequestMapping("/concurrent")
 public class ConcurrentController {
 
-    private Logger logger = LoggerFactory.getLogger(getClass());
+  private Logger logger = LoggerFactory.getLogger(getClass());
 
-    @GetMapping("/sync")
-    public String helloWorldSync() {
-        logger.info("Request received");
-        String sync = processRequest();
-        logger.info("Servlet thread released");
-        return sync;
+  @GetMapping("/sync")
+  public String helloWorldSync() {
+    logger.info("Request received");
+    String sync = processRequest();
+    logger.info("Servlet thread released");
+    return sync;
+  }
+
+  @GetMapping("/callable")
+  public Callable<String> helloWorldCallable() {
+    logger.info("Request received");
+    // anonymous inner class
+    //        Callable<String> callable = new Callable<String>() {
+    //            @Override
+    //            public String call() throws Exception {
+    //                return processRequest();
+    //            }
+    //        };
+
+    // lambda expression to replace anonymous inner class
+    // Callable<String> callable = () -> processRequest();
+    // method reference to replace lambda expression
+    Callable<String> callable = this::processRequest;
+    logger.info("Servlet thread released");
+    return callable;
+  }
+
+  @GetMapping("/deferred")
+  public DeferredResult<String> helloWorldDeferred() {
+    logger.info("Request received");
+    DeferredResult<String> result = new DeferredResult<>();
+    ForkJoinPool.commonPool().submit(() -> {
+      result.setResult(processRequest());
+    });
+    logger.info("Servlet thread released");
+    return result;
+  }
+
+  @GetMapping("/completable-future")
+  public CompletableFuture<String> helloWorldCompletableFuture() {
+    logger.info("Request received");
+    CompletableFuture<String> future = CompletableFuture.supplyAsync(this::processRequest);
+    logger.info("Servlet thread released");
+    return future;
+  }
+  private String processRequest() {
+    logger.info("Start processing request");
+    try {
+      Thread.sleep(5000);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
     }
+    logger.info("Completed processing request");
 
-    @GetMapping("/callable")
-    public Callable<String> helloWorldCallable() {
-        logger.info("Request received");
-//        Callable<String> callable = this::processRequest;
-//        Callable<String> callable = new Callable<String>() {
-//            @Override
-//            public String call() throws Exception {
-//                return processRequest();
-//            }
-//        };
-        Callable<String> callable = () -> processRequest(); // lambda
-        logger.info("Servlet thread released");
-        return callable;
-    }
-
-
-    private String processRequest() {
-        logger.info("Start processing request");
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        logger.info("Completed processing request");
-
-        return "Hello World!";
-    }
+    return "Hello World!";
+  }
 }
