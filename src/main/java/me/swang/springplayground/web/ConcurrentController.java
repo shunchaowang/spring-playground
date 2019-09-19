@@ -48,9 +48,11 @@ public class ConcurrentController {
   public DeferredResult<String> helloWorldDeferred() {
     logger.info("Request received");
     DeferredResult<String> result = new DeferredResult<>();
-    ForkJoinPool.commonPool().submit(() -> {
-      result.setResult(processRequest());
-    });
+    ForkJoinPool.commonPool()
+        .submit(
+            () -> {
+              result.setResult(processRequest());
+            });
     logger.info("Servlet thread released");
     return result;
   }
@@ -64,17 +66,17 @@ public class ConcurrentController {
   }
 
   /**
-   * Completable future is a preferred approach to handle deferred result.
-   * Still wants to make controller return a DeferredResult to stick with Spring MVC pattern.
+   * Completable future is a preferred approach to handle deferred result. Still wants to make
+   * controller return a DeferredResult to stick with Spring MVC pattern.
+   *
    * @return
    */
   @GetMapping("/deferred-future")
   public DeferredResult<String> helloWorldDeferredFuture() {
     DeferredResult<String> deferredResult = new DeferredResult<>();
     logger.debug("Request received");
-    CompletableFuture<String> future = CompletableFuture
-            .supplyAsync(this::processRequest)
-            .whenCompleteAsync((result, throwable) -> deferredResult.setResult(result));
+    CompletableFuture.supplyAsync(this::processRequest)
+        .whenCompleteAsync((result, throwable) -> deferredResult.setResult(result));
     logger.debug("Servlet thread released");
     return deferredResult;
   }
