@@ -66,7 +66,7 @@ public class ConcurrentController {
   }
 
   /**
-   * Completable future is a preferred approach to handle deferred result. Still wants to make
+   * Completable future is a preferred approach to handle deferred result. Here we wants to make
    * controller return a DeferredResult to stick with Spring MVC pattern.
    *
    * @return
