@@ -6,11 +6,13 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import me.swang.springplayground.domain.User;
 import me.swang.springplayground.repository.UserRepository;
 
 @Service
+@Transactional(readOnly = true)
 public class UserServiceImpl implements UserService {
   @Autowired
   private UserRepository userRepository;
@@ -28,11 +30,13 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
+  @Transactional(readOnly = false)
   public void saveOrUpdate(User user) {
     userRepository.save(user);
   }
 
   @Override
+  @Transactional(readOnly = false)
   public void delete(long id) {
     userRepository.deleteById(id);
   }
