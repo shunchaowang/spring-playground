@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -71,6 +72,25 @@ public class UserController {
 
     // set createdOn of Timestamp
     user.setCreatedOn(new Timestamp(date.getTime()));
+    // set updatedOn as EST of Calendar
+    TimeZone estTimeZone = TimeZone.getTimeZone("US/Eastern");
+    Calendar updateOn = Calendar.getInstance(estTimeZone);
+    updateOn.setTime(date);
+    user.setUpdatedOn(updateOn);
+    userService.saveOrUpdate(user);
+    return user.getId();
+  }
+
+  @PutMapping("/users")
+  private long updateUser(@RequestBody User user) {
+    SimpleDateFormat dateFormat = new SimpleDateFormat(dateFormatStr);
+    Date date = null;
+    try {
+      date = dateFormat.parse(createdOnStr);
+    } catch (ParseException e) {
+      e.printStackTrace();
+    }
+
     // set updatedOn as EST of Calendar
     TimeZone estTimeZone = TimeZone.getTimeZone("US/Eastern");
     Calendar updateOn = Calendar.getInstance(estTimeZone);
